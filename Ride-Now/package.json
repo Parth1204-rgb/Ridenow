@@ -1,0 +1,23 @@
+{
+  "name": "workspace",
+  "version": "0.0.0",
+  "license": "MIT",
+  "workspaces": [
+    "lib/db",
+    "lib/api-zod",
+    "lib/api-client-react",
+    "artifacts/api-server",
+    "artifacts/ridenow"
+  ],
+  "scripts": {
+    "dev": "node start.js",
+    "build": "npm run typecheck",
+    "typecheck": "tsc --build"
+  },
+  "private": true,
+  "devDependencies": {
+    "concurrently": "^9.2.1",
+    "prettier": "^3.8.1",
+    "typescript": "~5.9.2"
+  }
+}

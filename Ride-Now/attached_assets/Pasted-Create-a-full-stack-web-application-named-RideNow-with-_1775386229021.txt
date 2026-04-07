@@ -1,0 +1,146 @@
+Create a full-stack web application named "RideNow" with STRICT separation between frontend (client) and backend (server). Build them as two independent applications inside one project.
+
+----------------------------------------
+
+📁 PROJECT STRUCTURE (VERY IMPORTANT)
+
+Root Folder:
+- client/  → React frontend (runs on port 5173)
+- server/  → Node.js backend (runs on port 5000)
+
+Both should run independently using separate terminals.
+
+----------------------------------------
+
+⚙️ FRONTEND (CLIENT)
+
+Tech:
+- React (Vite)
+- Tailwind CSS
+- React Router
+- Axios
+
+Requirements:
+- All UI and pages must be inside client/
+- Use Axios to call backend APIs (http://localhost:5000/api)
+- Use Context API for global state (auth, user, rides)
+
+Structure:
+client/src/
+- pages/
+- components/
+- layouts/
+- services/api.js
+- context/AuthContext.jsx
+
+----------------------------------------
+
+⚙️ BACKEND (SERVER)
+
+Tech:
+- Node.js
+- Express.js
+- MongoDB (Mongoose)
+
+Structure:
+server/
+- models/
+- routes/
+- controllers/
+- middleware/
+- config/db.js
+
+Requirements:
+- All APIs under: /api/*
+- Enable CORS for frontend
+- Use express.json()
+- JWT authentication middleware
+
+----------------------------------------
+
+🔐 AUTH SYSTEM (CONNECTED)
+
+- User login/signup from frontend
+- Backend verifies and returns JWT
+- Store token in localStorage
+- Protect routes (frontend + backend)
+
+----------------------------------------
+
+🌐 API CONNECTION
+
+Frontend must connect to backend using:
+Base URL: http://localhost:5000/api
+
+Example:
+- POST /api/auth/login
+- GET /api/rides
+- POST /api/bookings
+
+----------------------------------------
+
+🚗 FEATURES (IMPLEMENT FULLY)
+
+Customer:
+- Book Ride (Cab/Bike)
+- Rentals
+- Self Drive
+- Ride History
+- Profile
+
+Driver:
+- Accept rides
+- Toggle online/offline
+- Earnings
+
+Admin:
+- Dashboard
+- Manage users/drivers/vehicles
+
+----------------------------------------
+
+⚡ CORE LOGIC
+
+- Ride flow:
+  Requested → Accepted → Ongoing → Completed
+
+- Fare calculation:
+  Base fare + distance * rate
+
+----------------------------------------
+
+🎨 UI REQUIREMENTS
+
+- Modern UI (like Uber)
+- Fully responsive
+- Navbar + Dashboard Sidebar
+- Cards, Modals, Forms
+
+----------------------------------------
+
+🔧 RUNNING INSTRUCTIONS (IMPORTANT)
+
+Add scripts:
+
+Client:
+- npm run dev
+
+Server:
+- npm start (or nodemon)
+
+Also include:
+- .env file for backend (PORT, MONGO_URI, JWT_SECRET)
+
+----------------------------------------
+
+📦 FINAL OUTPUT
+
+- Fully working client + server
+- API properly connected
+- Clean folder separation
+- README with setup steps
+
+----------------------------------------
+
+GOAL:
+The frontend and backend must run separately but communicate perfectly via APIs, just like a real production-level application.

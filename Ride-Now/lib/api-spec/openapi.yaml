@@ -1,0 +1,1016 @@
+openapi: 3.1.0
+info:
+  title: Api
+  version: 0.1.0
+  description: RideNow API specification
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: auth
+    description: Authentication operations
+  - name: users
+    description: User management
+  - name: rides
+    description: Ride operations
+  - name: bookings
+    description: Booking operations
+  - name: drivers
+    description: Driver operations
+  - name: vehicles
+    description: Vehicle management
+  - name: admin
+    description: Admin operations
+
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /auth/register:
+    post:
+      operationId: registerUser
+      tags: [auth]
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterBody"
+      responses:
+        "201":
+          description: User created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/login:
+    post:
+      operationId: loginUser
+      tags: [auth]
+      summary: Login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginBody"
+      responses:
+        "200":
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/me:
+    get:
+      operationId: getMe
+      tags: [auth]
+      summary: Get current user
+      responses:
+        "200":
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+  /rides:
+    get:
+      operationId: getRides
+      tags: [rides]
+      summary: List rides (filtered by role)
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+        - name: customerId
+          in: query
+          schema:
+            type: ["integer", "null"]
+        - name: driverId
+          in: query
+          schema:
+            type: ["integer", "null"]
+      responses:
+        "200":
+          description: List of rides
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Ride"
+
+    post:
+      operationId: createRide
+      tags: [rides]
+      summary: Request a new ride
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateRideBody"
+      responses:
+        "201":
+          description: Ride created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Ride"
+
+  /rides/{id}:
+    get:
+      operationId: getRide
+      tags: [rides]
+      summary: Get a ride by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Ride details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Ride"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /rides/{id}/status:
+    patch:
+      operationId: updateRideStatus
+      tags: [rides]
+      summary: Update ride status
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateRideStatusBody"
+      responses:
+        "200":
+          description: Updated ride
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Ride"
+
+  /rides/{id}/cancel:
+    patch:
+      operationId: cancelRide
+      tags: [rides]
+      summary: Cancel a ride
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Cancelled ride
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Ride"
+
+  /rides/history:
+    get:
+      operationId: getRideHistory
+      tags: [rides]
+      summary: Get ride history for the current user
+      responses:
+        "200":
+          description: Ride history
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Ride"
+
+  /bookings:
+    get:
+      operationId: getBookings
+      tags: [bookings]
+      summary: Get bookings (rentals/self-drive)
+      responses:
+        "200":
+          description: List of bookings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Booking"
+
+    post:
+      operationId: createBooking
+      tags: [bookings]
+      summary: Create a booking (rental/self-drive)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateBookingBody"
+      responses:
+        "201":
+          description: Booking created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Booking"
+
+  /bookings/{id}:
+    get:
+      operationId: getBooking
+      tags: [bookings]
+      summary: Get a booking by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Booking
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Booking"
+
+  /drivers/me:
+    get:
+      operationId: getDriverProfile
+      tags: [drivers]
+      summary: Get current driver profile
+      responses:
+        "200":
+          description: Driver profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Driver"
+
+  /drivers/toggle-status:
+    patch:
+      operationId: toggleDriverStatus
+      tags: [drivers]
+      summary: Toggle driver online/offline status
+      responses:
+        "200":
+          description: Updated driver
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Driver"
+
+  /drivers/earnings:
+    get:
+      operationId: getDriverEarnings
+      tags: [drivers]
+      summary: Get driver earnings summary
+      responses:
+        "200":
+          description: Earnings data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EarningsSummary"
+
+  /drivers/available-rides:
+    get:
+      operationId: getAvailableRides
+      tags: [drivers]
+      summary: Get available (pending) rides for driver
+      responses:
+        "200":
+          description: Available rides
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Ride"
+
+  /drivers/{id}/accept-ride/{rideId}:
+    patch:
+      operationId: acceptRide
+      tags: [drivers]
+      summary: Driver accepts a ride
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: rideId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Accepted ride
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Ride"
+
+  /users:
+    get:
+      operationId: getUsers
+      tags: [users]
+      summary: Get all users (admin)
+      responses:
+        "200":
+          description: Users list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+
+  /users/{id}:
+    get:
+      operationId: getUser
+      tags: [users]
+      summary: Get user by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: User
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+    patch:
+      operationId: updateUser
+      tags: [users]
+      summary: Update user profile
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateUserBody"
+      responses:
+        "200":
+          description: Updated user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+  /vehicles:
+    get:
+      operationId: getVehicles
+      tags: [vehicles]
+      summary: Get all vehicles (admin)
+      responses:
+        "200":
+          description: Vehicles list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Vehicle"
+
+    post:
+      operationId: createVehicle
+      tags: [vehicles]
+      summary: Create a vehicle
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateVehicleBody"
+      responses:
+        "201":
+          description: Vehicle created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Vehicle"
+
+  /vehicles/{id}:
+    patch:
+      operationId: updateVehicle
+      tags: [vehicles]
+      summary: Update vehicle
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateVehicleBody"
+      responses:
+        "200":
+          description: Updated vehicle
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Vehicle"
+
+  /admin/dashboard:
+    get:
+      operationId: getAdminDashboard
+      tags: [admin]
+      summary: Get admin dashboard stats
+      responses:
+        "200":
+          description: Dashboard stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminDashboard"
+
+  /admin/drivers:
+    get:
+      operationId: getAdminDrivers
+      tags: [admin]
+      summary: Get all drivers (admin)
+      responses:
+        "200":
+          description: Drivers list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Driver"
+
+  /admin/drivers/{id}:
+    patch:
+      operationId: updateDriver
+      tags: [admin]
+      summary: Update driver (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateDriverBody"
+      responses:
+        "200":
+          description: Updated driver
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Driver"
+
+  /admin/rides:
+    get:
+      operationId: getAdminRides
+      tags: [admin]
+      summary: Get all rides (admin)
+      responses:
+        "200":
+          description: All rides
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Ride"
+
+  /admin/analytics:
+    get:
+      operationId: getAnalytics
+      tags: [admin]
+      summary: Get ride analytics (revenue, counts by day)
+      responses:
+        "200":
+          description: Analytics data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Analytics"
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+
+    RegisterBody:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+        role:
+          type: string
+          enum: [customer, driver, admin]
+        phone:
+          type: ["string", "null"]
+      required:
+        - name
+        - email
+        - password
+        - role
+
+    LoginBody:
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+      required:
+        - email
+        - password
+
+    AuthResponse:
+      type: object
+      properties:
+        token:
+          type: string
+        user:
+          $ref: "#/components/schemas/User"
+      required:
+        - token
+        - user
+
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        email:
+          type: string
+        role:
+          type: string
+          enum: [customer, driver, admin]
+        phone:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - email
+        - role
+        - createdAt
+
+    UpdateUserBody:
+      type: object
+      properties:
+        name:
+          type: string
+        phone:
+          type: ["string", "null"]
+
+    Ride:
+      type: object
+      properties:
+        id:
+          type: integer
+        customerId:
+          type: integer
+        driverId:
+          type: ["integer", "null"]
+        pickupAddress:
+          type: string
+        dropoffAddress:
+          type: string
+        rideType:
+          type: string
+          enum: [cab, bike]
+        status:
+          type: string
+          enum: [requested, accepted, ongoing, completed, cancelled]
+        fare:
+          type: ["number", "null"]
+        distance:
+          type: ["number", "null"]
+        customerName:
+          type: ["string", "null"]
+        driverName:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - customerId
+        - pickupAddress
+        - dropoffAddress
+        - rideType
+        - status
+        - createdAt
+        - updatedAt
+
+    CreateRideBody:
+      type: object
+      properties:
+        pickupAddress:
+          type: string
+        dropoffAddress:
+          type: string
+        rideType:
+          type: string
+          enum: [cab, bike]
+        distance:
+          type: number
+      required:
+        - pickupAddress
+        - dropoffAddress
+        - rideType
+        - distance
+
+    UpdateRideStatusBody:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [accepted, ongoing, completed, cancelled]
+      required:
+        - status
+
+    Booking:
+      type: object
+      properties:
+        id:
+          type: integer
+        customerId:
+          type: integer
+        vehicleId:
+          type: ["integer", "null"]
+        bookingType:
+          type: string
+          enum: [rental, self_drive]
+        startDate:
+          type: string
+          format: date-time
+        endDate:
+          type: string
+          format: date-time
+        totalAmount:
+          type: ["number", "null"]
+        status:
+          type: string
+          enum: [pending, confirmed, active, completed, cancelled]
+        customerName:
+          type: ["string", "null"]
+        vehicleInfo:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - customerId
+        - bookingType
+        - startDate
+        - endDate
+        - status
+        - createdAt
+
+    CreateBookingBody:
+      type: object
+      properties:
+        vehicleId:
+          type: ["integer", "null"]
+        bookingType:
+          type: string
+          enum: [rental, self_drive]
+        startDate:
+          type: string
+          format: date-time
+        endDate:
+          type: string
+          format: date-time
+      required:
+        - bookingType
+        - startDate
+        - endDate
+
+    Driver:
+      type: object
+      properties:
+        id:
+          type: integer
+        userId:
+          type: integer
+        name:
+          type: string
+        email:
+          type: string
+        phone:
+          type: ["string", "null"]
+        isOnline:
+          type: boolean
+        totalEarnings:
+          type: number
+        totalRides:
+          type: integer
+        rating:
+          type: ["number", "null"]
+        vehicleInfo:
+          type: ["string", "null"]
+        licenseNumber:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - userId
+        - name
+        - email
+        - isOnline
+        - totalEarnings
+        - totalRides
+        - createdAt
+
+    UpdateDriverBody:
+      type: object
+      properties:
+        isOnline:
+          type: boolean
+        licenseNumber:
+          type: ["string", "null"]
+        vehicleInfo:
+          type: ["string", "null"]
+
+    EarningsSummary:
+      type: object
+      properties:
+        totalEarnings:
+          type: number
+        todayEarnings:
+          type: number
+        weekEarnings:
+          type: number
+        totalRides:
+          type: integer
+        completedRides:
+          type: integer
+        averageRating:
+          type: ["number", "null"]
+      required:
+        - totalEarnings
+        - todayEarnings
+        - weekEarnings
+        - totalRides
+        - completedRides
+
+    Vehicle:
+      type: object
+      properties:
+        id:
+          type: integer
+        make:
+          type: string
+        model:
+          type: string
+        year:
+          type: integer
+        licensePlate:
+          type: string
+        vehicleType:
+          type: string
+          enum: [cab, bike, suv, van]
+        isAvailable:
+          type: boolean
+        ratePerHour:
+          type: ["number", "null"]
+        ratePerKm:
+          type: ["number", "null"]
+        driverId:
+          type: ["integer", "null"]
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - make
+        - model
+        - year
+        - licensePlate
+        - vehicleType
+        - isAvailable
+        - createdAt
+
+    CreateVehicleBody:
+      type: object
+      properties:
+        make:
+          type: string
+        model:
+          type: string
+        year:
+          type: integer
+        licensePlate:
+          type: string
+        vehicleType:
+          type: string
+          enum: [cab, bike, suv, van]
+        ratePerHour:
+          type: ["number", "null"]
+        ratePerKm:
+          type: ["number", "null"]
+        driverId:
+          type: ["integer", "null"]
+      required:
+        - make
+        - model
+        - year
+        - licensePlate
+        - vehicleType
+
+    UpdateVehicleBody:
+      type: object
+      properties:
+        isAvailable:
+          type: boolean
+        ratePerHour:
+          type: ["number", "null"]
+        ratePerKm:
+          type: ["number", "null"]
+        driverId:
+          type: ["integer", "null"]
+
+    AdminDashboard:
+      type: object
+      properties:
+        totalUsers:
+          type: integer
+        totalDrivers:
+          type: integer
+        activeDrivers:
+          type: integer
+        totalRides:
+          type: integer
+        completedRides:
+          type: integer
+        cancelledRides:
+          type: integer
+        pendingRides:
+          type: integer
+        totalRevenue:
+          type: number
+        todayRevenue:
+          type: number
+        totalVehicles:
+          type: integer
+      required:
+        - totalUsers
+        - totalDrivers
+        - activeDrivers
+        - totalRides
+        - completedRides
+        - cancelledRides
+        - pendingRides
+        - totalRevenue
+        - todayRevenue
+        - totalVehicles
+
+    Analytics:
+      type: object
+      properties:
+        dailyRides:
+          type: array
+          items:
+            $ref: "#/components/schemas/DailyRideStats"
+        ridesByType:
+          type: array
+          items:
+            $ref: "#/components/schemas/RideTypeStats"
+        ridesByStatus:
+          type: array
+          items:
+            $ref: "#/components/schemas/RideStatusStats"
+      required:
+        - dailyRides
+        - ridesByType
+        - ridesByStatus
+
+    DailyRideStats:
+      type: object
+      properties:
+        date:
+          type: string
+        count:
+          type: integer
+        revenue:
+          type: number
+      required:
+        - date
+        - count
+        - revenue
+
+    RideTypeStats:
+      type: object
+      properties:
+        rideType:
+          type: string
+        count:
+          type: integer
+      required:
+        - rideType
+        - count
+
+    RideStatusStats:
+      type: object
+      properties:
+        status:
+          type: string
+        count:
+          type: integer
+      required:
+        - status
+        - count
